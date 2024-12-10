@@ -17,10 +17,22 @@ class EmailAddressForm(forms.ModelForm):
         model = EmailAddress
         fields = ['email', 'is_primary']
 
+# wallet_app/forms.py
+
+from django import forms
+from .models import BankAccount
+import re
+
 class BankAccountForm(forms.ModelForm):
     class Meta:
         model = BankAccount
-        fields = ['account_number', 'routing_number', 'bank_name', 'is_primary']
+        fields = ['account_number', 'routing_number', 'bank_name']
+
+    def clean_routing_number(self):
+        routing_number = self.cleaned_data.get('routing_number')
+        if not re.match(r'^\d{9}$', routing_number):
+            raise forms.ValidationError('Routing number must be exactly 9 digits.')
+        return routing_number
 
 class TransactionSearchForm(forms.Form):
     query = forms.CharField(required=False)

@@ -1,14 +1,80 @@
-<!-- wallet_app/templates/wallet_app/search_transactions.html -->
 {% extends 'wallet_app/base.html' %}
-
 {% block title %}Search Transactions{% endblock %}
-
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h2>Search Transactions</h2>
-        <!-- Add search form here -->
-        <p>Coming soon...</p>
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Search Transactions</h2>
     </div>
+    <div class="card-body">
+      <form method="GET" class="mb-4">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" name="query" class="form-control" value="{{ query }}"
+                   placeholder="Search by email, phone...">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">From Date</label>
+            <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">To Date</label>
+            <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Transaction Type</label>
+            <select name="transaction_type" class="form-select">
+              <option value="">All</option>
+              <option value="SEND" {% if transaction_type == 'SEND' %}selected{% endif %}>Send Money</option>
+              <option value="REQUEST" {% if transaction_type == 'REQUEST' %}selected{% endif %}>Request Money</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </form>
+
+      {% if transactions %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>From/To</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+            <tr>
+              <td>{{ transaction.created_at|date:"M d, Y" }}</td>
+              <td>{{ transaction.get_transaction_type_display }}</td>
+              <td>
+                {% if transaction.sender == request.user %}
+                  To: {{ transaction.receiver.username }}
+                {% else %}
+                  From: {{ transaction.sender.username }}
+                {% endif %}
+              </td>
+              <td>${{ transaction.amount }}</td>
+              <td>{{ transaction.get_status_display }}</td>
+              <td>{{ transaction.description }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info">
+        No transactions found matching your search criteria.
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}

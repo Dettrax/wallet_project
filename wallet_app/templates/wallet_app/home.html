@@ -1,16 +1,17 @@
 {% extends 'wallet_app/base.html' %}
 {% block title %}Home{% endblock %}
 {% block content %}
+
 <div class="container mt-4">
     <h2>Welcome to Your Wallet</h2>
 
-    <!-- Summary Cards -->
+    <!-- Summary Cards Row -->
     <div class="row mt-4">
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Total Sent</h5>
-                    <p class="card-text text-primary h3">${{ total_sent|floatformat:2 }}</p>
+                    <p class="h3 text-primary">${{ total_sent|floatformat:2 }}</p>
                 </div>
             </div>
         </div>
@@ -19,7 +20,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Total Received</h5>
-                    <p class="card-text text-success h3">${{ total_received|floatformat:2 }}</p>
+                    <p class="h3 text-success">${{ total_received|floatformat:2 }}</p>
                 </div>
             </div>
         </div>
@@ -28,14 +29,17 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Balance</h5>
-                    <p class="card-text text-info h3">${{ balance|floatformat:2 }}</p>
+                    <p class="h3 {% if balance < 0 %}text-danger{% else %}text-info{% endif %}">
+                        ${{ balance|floatformat:2 }}
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Actions and Transactions Row -->
     <div class="row mt-4">
+        <!-- Quick Actions Column -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
@@ -48,28 +52,50 @@
             </div>
         </div>
 
+        <!-- Recent Transactions Column -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Recent Transactions</h5>
                     {% if recent_transactions %}
                         <div class="list-group">
-                        {% for transaction in recent_transactions %}
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">
-                                        {% if transaction.sender == request.user %}
-                                            Sent to {{ transaction.receiver.username }}
-                                        {% else %}
-                                            Received from {{ transaction.sender.username }}
+                            {% for transaction in recent_transactions %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            {% if transaction.sender == request.user %}
+                                                <span class="text-danger">Sent to {{ transaction.receiver.username }}</span>
+                                            {% else %}
+                                                <span class="text-success">Received from {{ transaction.sender.username }}</span>
+                                            {% endif %}
+                                        </h6>
+                                        <small class="text-muted">{{ transaction.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <p class="mb-1">${{ transaction.amount|floatformat:2 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            {% if transaction.status == 'COMPLETED' %}
+                                                <span class="badge bg-success">{{ transaction.get_status_display }}</span>
+                                            {% elif transaction.status == 'PENDING' %}
+                                                <span class="badge bg-warning">{{ transaction.get_status_display }}</span>
+                                            {% elif transaction.status == 'FAILED' %}
+                                                <span class="badge bg-danger">{{ transaction.get_status_display }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ transaction.get_status_display }}</span>
+                                            {% endif %}
+                                        </small>
+                                        {% if transaction.status == 'PENDING' and transaction.sender == request.user %}
+                                            <form method="POST" action="{% url 'wallet_app:complete_transaction' transaction.pk %}" class="mb-0">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success btn-sm">Complete Transaction</button>
+                                            </form>
                                         {% endif %}
-                                    </h6>
-                                    <small>{{ transaction.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    {% if transaction.description %}
+                                        <small class="d-block mt-1 text-muted">{{ transaction.description }}</small>
+                                    {% endif %}
                                 </div>
-                                <p class="mb-1">${{ transaction.amount|floatformat:2 }}</p>
-                                <small>{{ transaction.get_status_display }}</small>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
                         </div>
                     {% else %}
                         <p class="text-muted">No recent transactions</p>
@@ -79,4 +105,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}

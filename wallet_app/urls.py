@@ -17,4 +17,6 @@ urlpatterns = [
     path('request-money/', views.request_money, name='request_money'),
     path('statements/', views.statements, name='statements'),
     path('search/', views.search_transactions, name='search_transactions'),
+# wallet_app/urls.py
+path('complete-transaction/<int:pk>/', views.complete_transaction, name='complete_transaction'),
 ]
