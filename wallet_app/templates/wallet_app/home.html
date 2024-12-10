@@ -1,0 +1,82 @@
+{% extends 'wallet_app/base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome to Your Wallet</h2>
+
+    <!-- Summary Cards -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Sent</h5>
+                    <p class="card-text text-primary h3">${{ total_sent|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Received</h5>
+                    <p class="card-text text-success h3">${{ total_received|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Balance</h5>
+                    <p class="card-text text-info h3">${{ balance|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'wallet_app:send_money' %}" class="btn btn-primary">Send Money</a>
+                        <a href="{% url 'wallet_app:request_money' %}" class="btn btn-secondary">Request Money</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Transactions</h5>
+                    {% if recent_transactions %}
+                        <div class="list-group">
+                        {% for transaction in recent_transactions %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        {% if transaction.sender == request.user %}
+                                            Sent to {{ transaction.receiver.username }}
+                                        {% else %}
+                                            Received from {{ transaction.sender.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <small>{{ transaction.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1">${{ transaction.amount|floatformat:2 }}</p>
+                                <small>{{ transaction.get_status_display }}</small>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent transactions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

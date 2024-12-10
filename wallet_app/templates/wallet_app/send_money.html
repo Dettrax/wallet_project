@@ -1,0 +1,73 @@
+{% extends 'wallet_app/base.html' %}
+{% block title %}Send Money{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Send Money</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="recipient_identifier" class="form-label">Recipient Email or Phone</label>
+                            <input type="text" class="form-control" id="recipient_identifier" name="recipient_identifier" required>
+                            <div class="form-text">Enter recipient's email address or phone number</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Send Money</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if recent_transactions %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Transactions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Recipient</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ transaction.receiver.username }}</td>
+                                    <td>${{ transaction.amount }}</td>
+                                    <td>{{ transaction.get_status_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

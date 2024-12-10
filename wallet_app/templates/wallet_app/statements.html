@@ -1,0 +1,154 @@
+{% extends 'wallet_app/base.html' %}
+{% block title %}Statements{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Transaction Statements</h2>
+
+    <!-- Date Range Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary d-block">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Monthly Statistics -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Monthly Statistics</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Total Sent</th>
+                            <th>Total Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in monthly_stats %}
+                        <tr>
+                            <td>{{ stat.month|date:"F Y" }}</td>
+                            <td>${{ stat.sent_amount|default:0|floatformat:2 }}</td>
+                            <td>${{ stat.received_amount|default:0|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maximum Transactions per Month -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Maximum Transactions per Month</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Other Party</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in max_transaction_details %}
+                        <tr>
+                            <td>{{ detail.month|date:"F Y" }}</td>
+                            <td>${{ detail.amount|floatformat:2 }}</td>
+                            <td>{{ detail.transaction.get_transaction_type_display }}</td>
+                            <td>
+                                {% if detail.transaction.sender == request.user %}
+                                    To: {{ detail.transaction.receiver.username }}
+                                {% else %}
+                                    From: {{ detail.transaction.sender.username }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Best Users -->
+    <div class="row">
+        <!-- Top Senders -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Top Senders</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Total Sent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sender in best_senders %}
+                                <tr>
+                                    <td>{{ sender.user.username }}</td>
+                                    <td>${{ sender.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Receivers -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Top Receivers</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Total Received</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receiver in best_receivers %}
+                                <tr>
+                                    <td>{{ receiver.user.username }}</td>
+                                    <td>${{ receiver.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
